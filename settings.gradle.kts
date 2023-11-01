@@ -1,2 +1,2 @@
-rootProject.name = "MaxHomeEnergy"
+rootProject.name = "FinalProjectMapReduce"
 
