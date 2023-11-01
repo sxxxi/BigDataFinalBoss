@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AverageUsage {
-    private static final int HOUSE_ID_IDX = 0;
+    private static final int HOUSE_ID_IDX = 1;
     private static final int CONSUMPTION_IDX = 4;
 
     public static class Reduce extends Reducer<IntWritable, DoubleWritable, IntWritable, DoubleWritable> {

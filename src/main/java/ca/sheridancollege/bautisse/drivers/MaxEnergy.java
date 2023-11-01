@@ -90,7 +90,7 @@ public class MaxEnergy {
         Configuration config = new Configuration();
         config.set(Mappers.DurationFileFilter.Args.DURATION_START, durationStart);
         config.set(Mappers.DurationFileFilter.Args.DURATION_END, durationEnd);
-        config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_KEY_INDEX, 0);
+        config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_KEY_INDEX, 1);
         config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_VALUE_INDEX, 4);
 
         Job job = Job.getInstance(config, "Get all household's max consumption");
