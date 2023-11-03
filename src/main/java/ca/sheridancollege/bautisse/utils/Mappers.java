@@ -24,6 +24,10 @@ public class Mappers {
             public static final String DURATION_END = "1";
             public static final String OUTPUT_KEY_INDEX = "2";
             public static final String OUTPUT_VALUE_INDEX = "3";
+
+            public static final String INPUT_DATE_INDEX = "4";
+            public static final String INPUT_TIME_INDEX = "5";
+            public static final String INPUT_DT_FORMAT = "6";
         }
 
         @Override
@@ -31,10 +35,11 @@ public class Mappers {
                 LongWritable key, Text value,
                 Mapper<LongWritable, Text, IntWritable, DoubleWritable>.Context context
         ) throws IOException, InterruptedException {
-        // Parse durations from config
             Configuration config = context.getConfiguration();
             LocalDateTime durationStart;
             LocalDateTime durationEnd;
+
+            if (key.get() == 0) return;
 
             try {
                 durationStart = LocalDateTime.parse(config.get(Args.DURATION_START), ARG_DATETIME_FORMAT);
@@ -43,24 +48,28 @@ public class Mappers {
                 throw new IllegalArgumentException("Provided dates has wrong format. Use yyyy-MM-ddTHH:mm:ss");
             }
 
-            LocalDateTime fileDate = Utils.getFileNameDateTime(context);
+            try {
+                DateTimeFormatter dtFormat = DateTimeFormatter.ofPattern(config.get(Args.INPUT_DT_FORMAT));
+                String[] fields = value.toString().split("\\s+");
 
-            if (fileDate.isAfter(durationStart) && fileDate.isBefore(durationEnd)) {
                 int outKeyIndex = config.getInt(Args.OUTPUT_KEY_INDEX, -1);
                 int outValueIndex = config.getInt(Args.OUTPUT_VALUE_INDEX, -1);
+                int dateIndex = config.getInt(Args.INPUT_DATE_INDEX, -1);
+                int timeIndex = config.getInt(Args.INPUT_TIME_INDEX, -1);
 
-                if (outKeyIndex == outValueIndex || outKeyIndex < 0 || outValueIndex < 0)
+                if (outKeyIndex < 0 || outValueIndex < 0 || dateIndex < 0 || timeIndex < 0)
                     throw new IllegalArgumentException("Must pass the index number of the output key and output value");
 
-                try {
-                    String[] fields = value.toString().split("\\s+");
-                    int k = Integer.parseInt(fields[outKeyIndex]);
-                    double val = Double.parseDouble(fields[outValueIndex]);
+                LocalDateTime fileDate = LocalDateTime.parse(fields[dateIndex] + fields[timeIndex], dtFormat);
 
-                    context.write(new IntWritable(k), new DoubleWritable(val));
-                } catch (NumberFormatException e) {
-                    throw new NumberFormatException("Field in the provided index is not a number or is not the correct number type.");
+                if (fileDate.isAfter(durationStart) && fileDate.isBefore(durationEnd)) {
+                    int outKey = Integer.parseInt(fields[outKeyIndex]);
+                    double outVal = Double.parseDouble(fields[outValueIndex]);
+                    context.write(new IntWritable(outKey), new DoubleWritable(outVal));
                 }
+
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("The passed date time format pattern is invalid", e);
             }
         }
     }
