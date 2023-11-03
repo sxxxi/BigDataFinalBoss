@@ -25,8 +25,6 @@ public class MaxEnergy {
     public static final DateTimeFormatter FILE_NAME_TEMPORAL_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
     public static class Map extends Mapper<LongWritable, Text, IntWritable, DoubleWritable> {
-        private static final Pattern pattern = Pattern.compile("\\d+");
-
         @Override
         protected void map(
                 LongWritable key, Text value, Mapper<LongWritable, Text, IntWritable, DoubleWritable>.Context context
@@ -92,6 +90,9 @@ public class MaxEnergy {
         config.set(Mappers.DurationFileFilter.Args.DURATION_END, durationEnd);
         config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_KEY_INDEX, 1);
         config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_VALUE_INDEX, 4);
+        config.set(Mappers.DurationFileFilter.Args.INPUT_DT_FORMAT, "yyyy-MM-ddHH:mm:ss");
+        config.setInt(Mappers.DurationFileFilter.Args.INPUT_DATE_INDEX, 2);
+        config.setInt(Mappers.DurationFileFilter.Args.INPUT_TIME_INDEX, 3);
 
         Job job = Job.getInstance(config, "Get all household's max consumption");
 

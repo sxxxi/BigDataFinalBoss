@@ -23,21 +23,29 @@ public class FileImport {
     public static class Reduce extends Reducer<Text, LogFile, Text, IntWritable> {
         @Override
         protected void reduce(Text key, Iterable<LogFile> values, Reducer<Text, LogFile, Text, IntWritable>.Context context) throws IOException, InterruptedException {
-            for (LogFile value : values) {
-                Path path = new Path(key.toString(), value.fileName);
-                FileSystem fs = FileSystem.get(new Configuration());
+            FileSystem fs = FileSystem.get(new Configuration());
+            Path absoluteFile = new Path(key.toString());
 
-                if (!fs.exists(path.getParent())) fs.mkdirs(path.getParent());
+            if (!fs.exists(absoluteFile.getParent())) fs.mkdirs(absoluteFile.getParent());
 
-                FSDataOutputStream x = fs.create(path);
+            FSDataOutputStream file;
 
-                BufferedWriter br = new BufferedWriter( new OutputStreamWriter(x, StandardCharsets.UTF_8) );
-                br.write(value.content);
-                br.close();
-                x.close();
-
-                context.write(key, new IntWritable(0));
+            if (fs.exists(absoluteFile)) {
+                file = fs.append(absoluteFile);
+            } else {
+                file = fs.create(absoluteFile);
             }
+
+            BufferedWriter br = new BufferedWriter(new OutputStreamWriter(file, StandardCharsets.UTF_8));
+
+            for (LogFile value : values) {
+                br.append("\n");
+                br.write(value.content);
+            }
+
+            br.close();
+            file.close();
+            context.write(key, new IntWritable(0));
         }
     }
 

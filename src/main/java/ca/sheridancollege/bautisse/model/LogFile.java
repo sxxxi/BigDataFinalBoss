@@ -41,6 +41,23 @@ public class LogFile implements Serializable, Writable {
         );
     }
 
+    public static LogFile from(
+            String fileName, String content, Integer dateIdx, Integer timeIdx, DateTimeFormatter inputDateTimeFormat
+    ) {
+        String [] columns = content.split("\\s+");
+
+        String dateStr = columns[dateIdx];
+        String timeStr = columns[timeIdx];
+
+        LocalDateTime dateTime = LocalDateTime.parse(dateStr + "T" + timeStr, inputDateTimeFormat);
+
+        return new LogFile(
+                fileName,
+                dateTime,
+                content
+        );
+    }
+
     @Override
     public void write(DataOutput out) throws IOException {
         out.writeUTF(fileName);
