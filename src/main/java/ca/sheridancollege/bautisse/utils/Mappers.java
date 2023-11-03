@@ -86,31 +86,18 @@ public class Mappers {
             if (key.equals(new LongWritable(0)) || value == null || context == null) return;
 
             String sourceName = ((FileSplit) context.getInputSplit()).getPath().getName().split("\\.")[0];
-
-            LogFile file = null;
-            String parent = "";
+            LogFile file;
+            String absolutePath;
 
             if (sourceName.startsWith("consumption_")) {
-                file = LogFile.from(
-                        value.toString(),
-                        2, 3,
-                        CONSUMPTION_DT_FORMAT,
-                        sourceName
-                );
-                parent = "/energydata/" + file.createDate.getYear() + "/" + file.createDate.getMonthValue();
+                file = LogFile.from("consumption.txt", value.toString(), 2, 3, CONSUMPTION_DT_FORMAT);
+                absolutePath = "/energydata/" + file.createDate.getYear() + "/" + file.createDate.getMonthValue() + "/" + file.fileName;
             } else if (sourceName.startsWith("Weather_")) {
-                file = LogFile.from(
-                        value.toString(),
-                        0, 1,
-                        WEATHER_DT_FORMAT,
-                        sourceName
-                );
-                parent = "/weatherdata/" + file.createDate.getYear();
-            }
+                file = LogFile.from("weather.txt", value.toString(), 1, 2, WEATHER_DT_FORMAT);
+                absolutePath = "/weatherdata/" + file.createDate.getYear() + "/" + file.fileName;
+            } else return;
 
-            if (file == null) return;
-
-            context.write(new Text(parent), file);
+            context.write(new Text(absolutePath), file);
         }
     }
 }
