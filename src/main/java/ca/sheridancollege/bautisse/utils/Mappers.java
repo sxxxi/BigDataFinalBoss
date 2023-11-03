@@ -93,9 +93,12 @@ public class Mappers {
                 file = LogFile.from("consumption.txt", value.toString(), 2, 3, CONSUMPTION_DT_FORMAT);
                 absolutePath = "/energydata/" + file.createDate.getYear() + "/" + file.createDate.getMonthValue() + "/" + file.fileName;
             } else if (sourceName.startsWith("Weather_")) {
-                file = LogFile.from("weather.txt", value.toString(), 1, 2, WEATHER_DT_FORMAT);
+                file = LogFile.from("weather.txt", value.toString(), 0, 1, WEATHER_DT_FORMAT);
                 absolutePath = "/weatherdata/" + file.createDate.getYear() + "/" + file.fileName;
             } else return;
+
+            // Only allow data from 2015
+            if (file.createDate.getYear() < 2015) return;
 
             context.write(new Text(absolutePath), file);
         }

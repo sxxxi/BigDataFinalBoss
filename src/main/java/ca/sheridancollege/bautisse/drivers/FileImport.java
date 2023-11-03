@@ -53,6 +53,20 @@ public class FileImport {
             String inputDir,
             String outputDir
     ) throws IOException, InterruptedException, ClassNotFoundException {
+        FileSystem fs = FileSystem.get(new Configuration());
+
+        Path energy = new Path("/energydata");
+        Path weather = new Path("/weatherdata");
+
+        for (int i = 2015; i <= 2030; i++) {
+            Path energyYear = new Path(energy, Integer.toString(i));
+            Path weatherYear = new Path(weather, Integer.toString(i));
+
+            if (!fs.exists(energyYear)) fs.mkdirs(energyYear);
+            if (!fs.exists(weatherYear)) fs.mkdirs(weatherYear);
+        }
+
+
         Configuration config = new Configuration();
         Job job = Job.getInstance(config, "Import datasets");
 

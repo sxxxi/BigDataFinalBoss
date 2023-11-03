@@ -1,6 +1,7 @@
 package ca.sheridancollege.bautisse.drivers;
 
 import ca.sheridancollege.bautisse.utils.Mappers;
+import ca.sheridancollege.bautisse.utils.Utils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
@@ -13,6 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -49,7 +51,7 @@ public class AverageUsage {
      */
     public static void execute(
             String inputRoot, String durationStart, String durationEnd, String output
-    ) throws IOException, InterruptedException, ClassNotFoundException {
+    ) throws Exception {
         // create a job that creates another that has a custom input directory.
         LocalDateTime consumedDateTime = LocalDateTime.parse(durationStart, MaxEnergy.CONSUME_DATE_FORMAT);
         String targetDirString = Paths.get(
@@ -66,6 +68,9 @@ public class AverageUsage {
         config.set(Mappers.DurationFileFilter.Args.DURATION_END, durationEnd);
         config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_KEY_INDEX, HOUSE_ID_IDX);
         config.setInt(Mappers.DurationFileFilter.Args.OUTPUT_VALUE_INDEX, CONSUMPTION_IDX);
+        config.set(Mappers.DurationFileFilter.Args.INPUT_DT_FORMAT, "yyyy-MM-ddHH:mm:ss");
+        config.setInt(Mappers.DurationFileFilter.Args.INPUT_DATE_INDEX, 2);
+        config.setInt(Mappers.DurationFileFilter.Args.INPUT_TIME_INDEX, 3);
 
         Job job = Job.getInstance(config, "Get all household's max consumption");
 
@@ -79,7 +84,7 @@ public class AverageUsage {
 
         job.setNumReduceTasks(1);
 
-        FileInputFormat.addInputPath(job, targetDir);
+        FileInputFormat.addInputPaths(job, Utils.commaSeperatedDirs(inputRoot, DateTimeFormatter.ISO_DATE_TIME, durationStart, durationEnd));
         FileOutputFormat.setOutputPath(job, outDir);
 
         System.exit(
